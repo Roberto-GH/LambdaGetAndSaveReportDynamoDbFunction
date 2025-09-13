@@ -1,0 +1,28 @@
+service: report-processor
+frameworkVersion: '4'
+provider:
+  name: aws
+  runtime: nodejs22.x
+  architecture: arm64
+  region: us-east-1
+  memorySize: 128
+  timeout: 3
+  environment:
+    SUMMARY_TABLE_NAME: "Reports-Summary-Production-Table"
+  iam:
+    role:
+      statements:        
+        - Effect: "Allow"
+          Action:
+            - "dynamodb:UpdateItem"          
+          Resource: "arn:aws:dynamodb:us-east-1:520236304018:table/Reports-Summary-Production-Table"
+
+functions:
+  LambdaGetAndSaveReportDynamoDbFunction:
+    handler: index.handler    
+    events:
+      - stream:
+          type: dynamodb          
+          arn: arn:aws:dynamodb:us-east-1:520236304018:table/Reports-Production-Table/stream/2025-09-13T05:19:36.797
+          batchSize: 10        
+          startingPosition: LATEST
