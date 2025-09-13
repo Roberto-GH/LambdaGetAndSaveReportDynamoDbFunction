@@ -1,0 +1,17 @@
+# Serverless Framework build artifacts
+.serverless/
+
+# Node.js dependencies
+node_modules/
+
+# Local environment variables (si los usas)
+.env
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS-specific files
+.DS_Store
+Thumbs.db
