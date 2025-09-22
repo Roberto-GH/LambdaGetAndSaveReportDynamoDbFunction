@@ -1,0 +1,35 @@
+service: report-processor
+frameworkVersion: '4'
+provider:
+  name: aws
+  runtime: nodejs22.x
+  architecture: arm64
+  region: us-east-1
+  stage: ${opt:stage, 'dev'}
+  memorySize: 128
+  timeout: 3
+  environment:
+    SUMMARY_TABLE_NAME: ${ssm:/creadiya/reports-api/reports-summary-table-name/${self:provider.stage}}
+  iam:
+    role:
+      statements:        
+        - Effect: "Allow"
+          Action:
+            - "dynamodb:UpdateItem"          
+          Resource: ${ssm:/creadiya/reports-api/reports-summary-table-arn/${self:provider.stage}}
+        - Effect: "Allow"
+          Action:
+            - "dynamodb:DescribeStream"
+            - "dynamodb:GetRecords"
+            - "dynamodb:GetShardIterator"
+          Resource: ${ssm:/creadiya/reports-api/reports-table-stream-arn/${self:provider.stage}}
+
+functions:
+  saveReport:
+    handler: index.handler    
+    events:
+      - stream:
+          type: dynamodb          
+          arn: ${ssm:/creadiya/reports-api/reports-table-stream-arn/${self:provider.stage}}
+          batchSize: 10        
+          startingPosition: LATEST
